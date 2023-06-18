@@ -1,9 +1,17 @@
 "use client";
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../../config";
 
 export default function Home() {
+  const router = useRouter();
+
+  const [userError, setUserError] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       email: "",
@@ -15,11 +23,19 @@ export default function Home() {
         .required("Email Required"),
       password: Yup.string()
         .max(20, "Must be 20 characters or less")
-        .min(8, "Must be 8 characters or more")
+        .min(6, "Must be 6 characters or more")
         .required("Password Required"),
     }),
-    onSubmit: (values) => {
-      alert(JSON.stringify(values, null, 2));
+    onSubmit: ({ email, password }) => {
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          router.push("/");
+        })
+        .catch((error) => {
+          setUserError(true);
+          console.log(error);
+        });
     },
   });
 
@@ -64,6 +80,10 @@ export default function Home() {
             LOGIN
           </button>
         </form>
+        {userError ? (
+          <div className="text-red-600">Invalid email or password</div>
+        ) : null}
+        <div className="mb-2" />
         <div>
           or
           <Link href="/signup" className="ml-1 link link-hover font-bold">
