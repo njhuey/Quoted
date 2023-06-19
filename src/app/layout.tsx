@@ -20,7 +20,8 @@ export default function RootLayout({
           <h1 className="text-6xl font-bold">Quoted</h1>
           <p className="m-2">Where Wit Meets Submit!</p>
           {children}
-          <p className="mt-auto">Nathan Huey 2023</p>
+          <div className="mt-auto" />
+          <p className="mt-4">Nathan Huey 2023</p>
         </main>
       </body>
     </html>
