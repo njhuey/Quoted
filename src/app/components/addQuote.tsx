@@ -2,7 +2,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../../config";
+import { ref, getDownloadURL } from "firebase/storage";
+import { db, storage } from "../../config";
 import { user_interface, quote_interface } from "../page";
 
 interface ProfileProps {
@@ -22,17 +23,33 @@ export default function AddQuote({
 
   const addQuote = async (quote: string) => {
     if (quote !== "") {
+      // get the correct profile picture
+      let pfp: string;
+      try {
+        const pfpReference = ref(storage, user.uid);
+        pfp = await getDownloadURL(pfpReference);
+      } catch (error) {
+        const blankReference = ref(storage, "profile.png");
+        pfp = await getDownloadURL(blankReference);
+      }
+
+      // add new quote to firestore
       addDoc(collection(db, "quotes"), {
         uid: user.uid,
         date: new Date(),
         quote: quote,
       });
-      quotesList.push({
+
+      // add new quote to front of quotesList
+      quotesList.unshift({
         name: user.name,
         date: new Date().toLocaleDateString(),
         quote: quote,
+        pfp: pfp,
       });
       setQuotesList(quotesList);
+
+      // refresh page
       router.refresh();
     }
   };

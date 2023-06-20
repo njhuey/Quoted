@@ -1,7 +1,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from "../../config";
+import { db, storage } from "../../config";
+import { ref, uploadBytes } from "firebase/storage";
 import { user_interface } from "../page";
 
 interface ProfileProps {
@@ -11,6 +12,7 @@ interface ProfileProps {
 
 export default function Profile({ user, setUser }: ProfileProps) {
   const [name, setName] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const updateUser = async () => {
     if (name !== "") {
@@ -22,12 +24,32 @@ export default function Profile({ user, setUser }: ProfileProps) {
     }
   };
 
+  const handleFileChange = (event: any) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleUpload = () => {
+    const pfpRef = ref(storage, user.uid);
+    if (selectedFile !== null) {
+      uploadBytes(pfpRef, selectedFile)
+        .then((snapshot) => {
+          console.log("Uploaded pfp");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+    setSelectedFile(null);
+    updateUser();
+  };
+
   return (
     <>
       <button
         onClick={() => {
           (window as any).profile.showModal();
           setName(user.name);
+          setSelectedFile(null);
         }}
       >
         <Image src="/profile.svg" alt="profile" width={22} height={22} />
@@ -60,7 +82,21 @@ export default function Profile({ user, setUser }: ProfileProps) {
               updateUser();
             }}
           >
-            SAVE CHANGES
+            UPDATE DISPLAY NAME
+          </button>
+          <p className="pt-6 pb-2">Profile Picture</p>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="flex w-full mb-2"
+          />
+          <button
+            onClick={handleUpload}
+            disabled={!selectedFile}
+            className="btn btn-full w-full"
+          >
+            Upload
           </button>
         </form>
       </dialog>

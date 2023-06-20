@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { auth, db } from "../config";
+import { auth, db, storage } from "../config";
 import {
   collection,
   getDocs,
@@ -10,6 +10,7 @@ import {
   query,
   orderBy,
 } from "firebase/firestore";
+import { ref, getDownloadURL } from "firebase/storage";
 import Quote from "./components/quote";
 import AddQuote from "./components/addQuote";
 import Profile from "./components/profile";
@@ -18,6 +19,7 @@ export interface quote_interface {
   name: string;
   date: string;
   quote: string;
+  pfp: string;
 }
 
 export interface user_interface {
@@ -47,7 +49,7 @@ export default function Quotes() {
     };
     fetchUser();
 
-    // fetch quotes from firebase
+    // fetch quotes from firestore
     fetchQuotes();
   }, []);
 
@@ -64,16 +66,29 @@ export default function Quotes() {
     );
     const quoteSnapshot = await getDocs(quoteQuery);
     const quotes: quote_interface[] = [];
+    const blankReference = ref(storage, "profile.png");
+    const blankProfile = await getDownloadURL(blankReference);
 
+    // get data needed to display quotes
     for (const data of quoteSnapshot.docs) {
       try {
         const docRef = doc(db, "users", data.get("uid"));
         const userSnap = await getDoc(docRef);
+        const pfpReference = ref(storage, data.get("uid"));
+
+        // get the correct profile picture
+        let pfp: string;
+        try {
+          pfp = await getDownloadURL(pfpReference);
+        } catch (error) {
+          pfp = blankProfile;
+        }
 
         quotes.push({
           name: userSnap.get("name"),
           date: data.get("date").toDate().toLocaleDateString(),
           quote: data.get("quote"),
+          pfp: pfp,
         });
       } catch (error) {
         console.log("Error getting user:", error);
@@ -83,6 +98,7 @@ export default function Quotes() {
     setQuotesList(quotes);
   };
 
+  // if quotesList is empty, display loading spinner
   if (quotesList.length === 0) {
     return (
       <div className="flex justify-center items-center h-80">
@@ -102,7 +118,12 @@ export default function Quotes() {
         />
       </div>
       {quotesList.map((quote) => (
-        <Quote quote={quote.quote} name={quote.name} date={quote.date} />
+        <Quote
+          quote={quote.quote}
+          name={quote.name}
+          date={quote.date}
+          pfp={quote.pfp}
+        />
       ))}
     </>
   );
