@@ -6,7 +6,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../config";
-import { collection, addDoc } from "firebase/firestore";
+import { setDoc, doc } from "firebase/firestore";
 
 export default function Signup() {
   const router = useRouter();
@@ -35,7 +35,8 @@ export default function Signup() {
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
-          addDoc(collection(db, "users"), {
+          const docRef = doc(db, "users", user.uid);
+          setDoc(docRef, {
             name: name,
           })
             .then((docRef) => {
