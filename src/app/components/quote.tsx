@@ -4,7 +4,7 @@ import { quote_interface, user_interface } from "../page";
 interface QuoteProps {
   quote: quote_interface;
   user: user_interface;
-  deleteQuote: any;
+  deleteQuote: (id: string) => void;
 }
 
 export default function Quote({ quote, user, deleteQuote }: QuoteProps) {

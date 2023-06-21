@@ -9,7 +9,7 @@ import { user_interface, quote_interface } from "../page";
 interface ProfileProps {
   user: user_interface;
   quotesList: quote_interface[];
-  setQuotesList: any;
+  setQuotesList: (quotesList: quote_interface[]) => void;
 }
 
 export default function AddQuote({

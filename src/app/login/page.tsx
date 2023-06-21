@@ -27,6 +27,7 @@ export default function Login() {
         .required("Password Required"),
     }),
     onSubmit: ({ email, password }) => {
+      // sign in user
       signInWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;

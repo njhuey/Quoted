@@ -32,10 +32,12 @@ export default function Signup() {
         .required("Password Required"),
     }),
     onSubmit: ({ name, email, password }) => {
+      // create user
       createUserWithEmailAndPassword(auth, email, password)
         .then((userCredential) => {
           const user = userCredential.user;
           const docRef = doc(db, "users", user.uid);
+          // add some user data to firestore
           setDoc(docRef, {
             name: name,
           })

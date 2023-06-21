@@ -7,12 +7,12 @@ import { user_interface } from "../page";
 
 interface ProfileProps {
   user: user_interface;
-  setUser: any;
+  setUser: (user: user_interface) => void;
 }
 
 export default function Profile({ user, setUser }: ProfileProps) {
   const [name, setName] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState<null | File>(null);
 
   const updateUser = async () => {
     if (name !== "") {
@@ -24,8 +24,10 @@ export default function Profile({ user, setUser }: ProfileProps) {
     }
   };
 
-  const handleFileChange = (event: any) => {
-    setSelectedFile(event.target.files[0]);
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFile(event.target.files[0]);
+    }
   };
 
   const handleUpload = () => {
