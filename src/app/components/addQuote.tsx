@@ -34,23 +34,25 @@ export default function AddQuote({
       }
 
       // add new quote to firestore
-      addDoc(collection(db, "quotes"), {
+      await addDoc(collection(db, "quotes"), {
         uid: user.uid,
         date: new Date(),
         quote: quote,
-      });
+      }).then(function (docRef) {
+        // add new quote to front of quotesList
+        quotesList.unshift({
+          id: docRef.id,
+          uid: user.uid,
+          name: user.name,
+          date: new Date().toLocaleDateString(),
+          quote: quote,
+          pfp: pfp,
+        });
+        setQuotesList(quotesList);
 
-      // add new quote to front of quotesList
-      quotesList.unshift({
-        name: user.name,
-        date: new Date().toLocaleDateString(),
-        quote: quote,
-        pfp: pfp,
+        // refresh page
+        router.refresh();
       });
-      setQuotesList(quotesList);
-
-      // refresh page
-      router.refresh();
     }
   };
 

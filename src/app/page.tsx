@@ -6,6 +6,7 @@ import {
   collection,
   getDocs,
   getDoc,
+  deleteDoc,
   doc,
   query,
   orderBy,
@@ -16,6 +17,8 @@ import AddQuote from "./components/addQuote";
 import Profile from "./components/profile";
 
 export interface quote_interface {
+  id: string;
+  uid: string;
   name: string;
   date: string;
   quote: string;
@@ -85,6 +88,8 @@ export default function Quotes() {
         }
 
         quotes.push({
+          id: data.id,
+          uid: data.get("uid"),
           name: userSnap.get("name"),
           date: data.get("date").toDate().toLocaleDateString(),
           quote: data.get("quote"),
@@ -96,6 +101,15 @@ export default function Quotes() {
     }
 
     setQuotesList(quotes);
+  };
+
+  const deleteQuote = async (id: string) => {
+    // delete quote from firestore
+    await deleteDoc(doc(db, "quotes", id));
+
+    // delete quote from quotesList
+    const newQuotesList = quotesList.filter((quote) => quote.id !== id);
+    setQuotesList(newQuotesList);
   };
 
   // if quotesList is empty, display loading spinner
@@ -118,12 +132,7 @@ export default function Quotes() {
         />
       </div>
       {quotesList.map((quote) => (
-        <Quote
-          quote={quote.quote}
-          name={quote.name}
-          date={quote.date}
-          pfp={quote.pfp}
-        />
+        <Quote quote={quote} user={user} deleteQuote={deleteQuote} />
       ))}
     </>
   );
